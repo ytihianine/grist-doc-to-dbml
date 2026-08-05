@@ -3,7 +3,6 @@ import sqlite3
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from enum import Enum
 from pathlib import Path
 
 import pandas as pd
@@ -40,50 +39,20 @@ class Config:
     grist_column_with_parentid: str = "parentId"
 
 
-class GristType(Enum):
-    TEXT = "Text"
-    BLOB = "Blob"
-    ANY = "Any"
-    BOOL = "Bool"
-    INT = "Int"
-    NUMERIC = "Numeric"
-    DATE = "Date"
-    DATETIME = "DateTime"
-    CHOICE = "Choice"
-    CHOICELIST = "ChoiceList"
-    REFERENCE = "Ref"
-    REFERENCELIST = "RefList"
-    ATTACHMENTS = "Attachments"
-
-
-class DBMLType(Enum):
-    UNDEFINED = "grist_any"
-    TEXT = "text"
-    TEXTLIST = "text[]"
-    DATE = "date"
-    DATETIME = "datetime"
-    BINARY = "binary"
-    INTEGER = "int"
-    INTEGERLIST = "int[]"
-    NUMERIC = "numeric"
-    BOOL = "boolean"
-    FILE = "file"
-
-
 TYPE_CONVERT = {
-    GristType.TEXT.value: DBMLType.TEXT.value,
-    GristType.BLOB.value: DBMLType.BINARY.value,
-    GristType.ANY.value: DBMLType.UNDEFINED.value,
-    GristType.BOOL.value: DBMLType.BOOL.value,
-    GristType.INT.value: DBMLType.INTEGER.value,
-    GristType.NUMERIC.value: DBMLType.NUMERIC.value,
-    GristType.DATE.value: DBMLType.DATE.value,
-    GristType.DATETIME.value: DBMLType.DATETIME.value,
-    GristType.CHOICE.value: DBMLType.TEXT.value,
-    GristType.CHOICELIST.value: DBMLType.TEXTLIST.value,
-    GristType.REFERENCE.value: DBMLType.INTEGER.value,
-    GristType.REFERENCELIST.value: DBMLType.INTEGERLIST.value,
-    GristType.ATTACHMENTS.value: DBMLType.FILE.value,
+    "Any": "grist_any",
+    "Blob": "binary",
+    "Text": "text",
+    "Numeric": "numeric",
+    "Int": "int",
+    "Bool": "boolean",
+    "Date": "date",
+    "DateTime": "datetime",
+    "Choice": "text",
+    "ChoiceList": "text[]",
+    "Ref": "int",
+    "RefList": "int[]",
+    "Attachments": "file",
 }
 
 
@@ -196,7 +165,7 @@ def generate_dbml_file(df: pd.DataFrame, output_path: Path, parentid_column: str
         dbml[tbl].append("\n{\n\tid integer [primary key]")
 
     for row in df.itertuples():
-        if row.type_grist in [GristType.REFERENCE.value, GristType.REFERENCELIST.value]:  # type: ignore
+        if row.type in ["Ref:Check", "RefList:Check"]:  # type: ignore
             dbml[row.tableId].append(f"\n\tid_{row.colId} {row.type_dbml} [ref: > {row.type_grist_tbl_name}.id]")  # type: ignore
         else:
             dbml[row.tableId].append(f"\n\t{row.colId} {row.type_dbml}")  # type: ignore
@@ -247,13 +216,14 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
         columntype_column=config.grist_column_with_column_type,
         lower_col_name=True,
     )
+    custom_logger.info(msg=f"\n{df_cols.head()}")
     custom_logger.info(msg=f"Nb lignes après processing: {len(df_cols)}")
     custom_logger.info(msg="Step 3/5 - Finished.")
 
     # Prepare last df before formating
     custom_logger.info(msg="Step 4/5 - Generating DBML formated string from the processed dataframes.")
     df_dbml = process_dbml(df_tbl=df_tbl, df_col=df_cols, parent_id_column=config.grist_column_with_parentid)
-    custom_logger.info(msg=df_dbml.head())
+    custom_logger.info(msg=f"\n{df_dbml.head()}")
     custom_logger.info(msg="Step 4/5 - Finished.")
 
     # (Optional) Export dataframe to csv format
