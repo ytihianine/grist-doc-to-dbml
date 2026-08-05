@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/ytihianine/grist-doc-to-dbml/compare/v0.3.0...v0.3.1) (2026-08-05)
+
+
+### Others
+
+* **docs:** rename repo ([ceb90df](https://github.com/ytihianine/grist-doc-to-dbml/commit/ceb90df6007953e7532f002cd520ca798b7d4dbf))
+
 ## [0.3.0](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.2.0...v0.3.0) (2026-08-05)
 
 
