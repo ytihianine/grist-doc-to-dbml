@@ -1,9 +1,20 @@
+import logging
+import sqlite3
+import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from sqlite3 import Connection
 
 import pandas as pd
+
+# ===================================
+# Logging configuration
+# ===================================
+custom_logger = logging.Logger(name=__name__, level=logging.DEBUG)
+handler = logging.StreamHandler(stream=sys.stdout)  # Handler pour afficher les logs dans la console
+formatter = logging.Formatter(fmt="%(asctime)s - %(levelname)s - %(message)s")
+handler.setFormatter(fmt=formatter)
+custom_logger.addHandler(hdlr=handler)
 
 
 @dataclass
@@ -78,14 +89,14 @@ TYPE_CONVERT = {
 # ===================================
 # Grist Metadata
 # ===================================
-def get_grist_table_definitions(tbl_name: str, conn: Connection) -> pd.DataFrame:
-    print("Fetching table information from Grist document metadata.")
+def get_grist_table_definitions(tbl_name: str, conn: sqlite3.Connection) -> pd.DataFrame:
+    custom_logger.info(msg="Fetching table information from Grist document metadata.")
     df_tbl = pd.read_sql(f"SELECT * FROM {tbl_name}", con=conn)
     return df_tbl
 
 
-def get_grist_column_definitions(tbl_name: str, conn: Connection) -> pd.DataFrame:
-    print("Fetching columns information from Grist document metadata.")
+def get_grist_column_definitions(tbl_name: str, conn: sqlite3.Connection) -> pd.DataFrame:
+    custom_logger.info(msg="Fetching columns information from Grist document metadata.")
     df_col = pd.read_sql(f"SELECT * FROM {tbl_name}", con=conn)
     return df_col
 
@@ -197,3 +208,46 @@ def generate_dbml_file(output_path: str, df: pd.DataFrame) -> None:
 
 def export_to_csv(path: str, df: pd.DataFrame, sep: str = ";") -> None:
     df.to_csv(path_or_buf=path, sep=sep)
+
+
+# ===================================
+# All in one function
+# ===================================
+def convert_grist_schema_to_dbml(config: Config) -> None:
+
+    # Start
+    db_conn = sqlite3.connect(config.grist_doc_path)
+
+    # Process table information
+    df_tbl = get_grist_table_definitions(tbl_name=config.grist_table_with_table_information, conn=db_conn)
+    custom_logger.info(msg=f"Nb lignes avant processing: {len(df_tbl)}")
+    df_tbl = process_tbl_info(
+        df=df_tbl, tablename_column="tableId", grist_internal_tables=config.grist_internal_tables, lower_tbl_name=True
+    )
+    custom_logger.info(msg=f"Nb lignes après processing: {len(df_tbl)}")
+
+    # Process columns information
+    custom_logger.info(msg="Processing columns information")
+    df_cols = get_grist_column_definitions(tbl_name=config.grist_table_with_column_information, conn=db_conn)
+    custom_logger.info(msg=f"Nb lignes avant processing: {len(df_cols)}")
+    df_cols = process_col_info(
+        df=df_cols,
+        grist_internal_columns=config.grist_internal_columns,
+        parent_id_column="parentId",
+        columnname_column="colId",
+        columntype_column="type",
+        lower_col_name=True,
+    )
+    custom_logger.info(msg=f"Nb lignes après processing: {len(df_cols)}")
+
+    # Prepare last df before formating
+    custom_logger.info(msg="Generating DBML file")
+    df_dbml = process_dbml(df_tbl=df_tbl, df_col=df_cols, parent_id_column="parentId")
+    custom_logger.info(msg=df_dbml.head())
+
+    # (Optional) Export dataframe to csv format
+    if config.export:
+        export_to_csv(path=config.csv_output_path, df=df_dbml)
+
+    # Export to dbml format
+    generate_dbml_file(output_path=config.dbml_output_path, df=df_dbml)
