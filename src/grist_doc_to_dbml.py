@@ -124,6 +124,14 @@ def drop_grist_internal_columns(df: pd.DataFrame, column: str, grist_internal_co
     return df
 
 
+def parse_grist_type(df: pd.DataFrame) -> pd.DataFrame:
+    # Séparer les types et le nom des tables références
+    df["type_processed"] = df.loc[:, "type"].str.split(":")
+    df["type_grist"] = df.loc[:, "type_processed"].str.get(0)
+    df["type_grist_ref_link_tbl_name"] = df.loc[:, "type_processed"].str.get(1)
+    return df
+
+
 def convert_grist_data_type_to_dbml(df: pd.DataFrame, column: str) -> pd.DataFrame:
     df["type_dbml"] = df.loc[:, column].map(TYPE_CONVERT)
     return df
@@ -140,6 +148,7 @@ def process_col_info(
     cols_to_keep = ["id", parent_id_column, columnname_column, "type", "description"]
     df = df.loc[:, cols_to_keep].copy()
     df = drop_grist_internal_columns(df=df, column=columnname_column, grist_internal_columns=grist_internal_columns)
+    df = parse_grist_type(df=df)
     df = convert_grist_data_type_to_dbml(df=df, column=columntype_column)
     if lower_col_name:
         df[columnname_column] = df.loc[:, columnname_column].str.lower()
@@ -165,10 +174,12 @@ def generate_dbml_file(df: pd.DataFrame, output_path: Path, parentid_column: str
         dbml[tbl].append("\n{\n\tid integer [primary key]")
 
     for row in df.itertuples():
-        if row.type in ["Ref:Check", "RefList:Check"]:  # type: ignore
-            dbml[row.tableId].append(f"\n\tid_{row.colId} {row.type_dbml} [ref: > {row.type_grist_tbl_name}.id]")  # type: ignore
+        if row.type_grist in ["Ref", "RefList"]:
+            dbml[row.tableId].append(
+                f"\n\tid_{row.colId} {row.type_dbml} [ref: > {str(row.type_grist_ref_link_tbl_name).lower()}.id]"
+            )
         else:
-            dbml[row.tableId].append(f"\n\t{row.colId} {row.type_dbml}")  # type: ignore
+            dbml[row.tableId].append(f"\n\t{row.colId} {row.type_dbml}")
 
     with open(file=output_path, mode="w") as dbml_file:
         for _key, values in dbml.items():
