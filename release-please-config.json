@@ -1,0 +1,26 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features"
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes"
+        },
+        {
+          "type": "docs",
+          "section": "Documentations"
+        },
+        {
+          "type": "chore",
+          "section": "Others"
+        }
+      ]
+    }
+  }
+}
