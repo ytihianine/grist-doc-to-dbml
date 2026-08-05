@@ -214,20 +214,25 @@ def export_to_csv(path: str, df: pd.DataFrame, sep: str = ";") -> None:
 # All in one function
 # ===================================
 def convert_grist_schema_to_dbml(config: Config) -> None:
+    custom_logger.info(msg="Starting conversion of Grist schema to DBML format script.")
 
     # Start
+    custom_logger.info(msg="Step 1/5 - Initialization of the sqlite3 connection.")
     db_conn = sqlite3.connect(config.grist_doc_path)
+    custom_logger.info(msg="Step 1/5 - Connection established.")
 
     # Process table information
+    custom_logger.info(msg="Step 2/5 - Starting processing of table information.")
     df_tbl = get_grist_table_definitions(tbl_name=config.grist_table_with_table_information, conn=db_conn)
     custom_logger.info(msg=f"Nb lignes avant processing: {len(df_tbl)}")
     df_tbl = process_tbl_info(
         df=df_tbl, tablename_column="tableId", grist_internal_tables=config.grist_internal_tables, lower_tbl_name=True
     )
     custom_logger.info(msg=f"Nb lignes après processing: {len(df_tbl)}")
+    custom_logger.info(msg="Step 2/5 - Finished.")
 
     # Process columns information
-    custom_logger.info(msg="Processing columns information")
+    custom_logger.info(msg="Step 3/5 - Starting processing of columns information")
     df_cols = get_grist_column_definitions(tbl_name=config.grist_table_with_column_information, conn=db_conn)
     custom_logger.info(msg=f"Nb lignes avant processing: {len(df_cols)}")
     df_cols = process_col_info(
@@ -239,15 +244,19 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
         lower_col_name=True,
     )
     custom_logger.info(msg=f"Nb lignes après processing: {len(df_cols)}")
+    custom_logger.info(msg="Step 3/5 - Finished.")
 
     # Prepare last df before formating
-    custom_logger.info(msg="Generating DBML file")
+    custom_logger.info(msg="Step 4/5 - Generating DBML formated string from the processed dataframes.")
     df_dbml = process_dbml(df_tbl=df_tbl, df_col=df_cols, parent_id_column="parentId")
     custom_logger.info(msg=df_dbml.head())
+    custom_logger.info(msg="Step 4/5 - Finished.")
 
     # (Optional) Export dataframe to csv format
+    custom_logger.info(msg="Step 5/5 - Exporting data.")
     if config.export:
         export_to_csv(path=config.csv_output_path, df=df_dbml)
 
     # Export to dbml format
     generate_dbml_file(output_path=config.dbml_output_path, df=df_dbml)
+    custom_logger.info(msg="Step 5/5 - Finished.")
