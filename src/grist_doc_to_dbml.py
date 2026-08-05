@@ -1,0 +1,199 @@
+from collections.abc import Iterable
+from dataclasses import dataclass, field
+from enum import Enum
+from sqlite3 import Connection
+
+import pandas as pd
+
+
+@dataclass
+class Config:
+    # User-defined parameters
+    grist_doc_path: str
+    csv_output_path: str
+    dbml_output_path: str
+    export: bool = False
+    # Grist additional tables and internal columns to drop
+    grist_internal_tables: list[str] = field(default_factory=lambda: ["summary"])
+    grist_internal_columns: list[str] = field(
+        default_factory=lambda: ["manual", "grist", "summary", "count", "group", "GristDocTour"]
+    )
+
+    # Grist info to look for Metadata
+    grist_table_with_table_information: str = "_grist_Tables"
+    grist_column_with_tablename: str = "tableId"
+    grist_table_with_column_information: str = "_grist_Tables_column"
+    grist_column_with_columnname: str = "colId"
+    grist_column_with_column_type: str = "type"
+    grist_column_with_parentid: str = "parentId"
+
+
+class GristType(Enum):
+    TEXT = "Text"
+    BLOB = "Blob"
+    ANY = "Any"
+    BOOL = "Bool"
+    INT = "Int"
+    NUMERIC = "Numeric"
+    DATE = "Date"
+    DATETIME = "DateTime"
+    CHOICE = "Choice"
+    CHOICELIST = "ChoiceList"
+    REFERENCE = "Ref"
+    REFERENCELIST = "RefList"
+    ATTACHMENTS = "Attachments"
+
+
+class DBMLType(Enum):
+    UNDEFINED = "grist_any"
+    TEXT = "text"
+    TEXTLIST = "text[]"
+    DATE = "date"
+    DATETIME = "datetime"
+    BINARY = "binary"
+    INTEGER = "int"
+    INTEGERLIST = "int[]"
+    NUMERIC = "numeric"
+    BOOL = "boolean"
+    FILE = "file"
+
+
+TYPE_CONVERT = {
+    GristType.TEXT.value: DBMLType.TEXT.value,
+    GristType.BLOB.value: DBMLType.BINARY.value,
+    GristType.ANY.value: DBMLType.UNDEFINED.value,
+    GristType.BOOL.value: DBMLType.BOOL.value,
+    GristType.INT.value: DBMLType.INTEGER.value,
+    GristType.NUMERIC.value: DBMLType.NUMERIC.value,
+    GristType.DATE.value: DBMLType.DATE.value,
+    GristType.DATETIME.value: DBMLType.DATETIME.value,
+    GristType.CHOICE.value: DBMLType.TEXT.value,
+    GristType.CHOICELIST.value: DBMLType.TEXTLIST.value,
+    GristType.REFERENCE.value: DBMLType.INTEGER.value,
+    GristType.REFERENCELIST.value: DBMLType.INTEGERLIST.value,
+    GristType.ATTACHMENTS.value: DBMLType.FILE.value,
+}
+
+
+# ===================================
+# Grist Metadata
+# ===================================
+def get_grist_table_definitions(tbl_name: str, conn: Connection) -> pd.DataFrame:
+    print("Fetching table information from Grist document metadata.")
+    df_tbl = pd.read_sql(f"SELECT * FROM {tbl_name}", con=conn)
+    return df_tbl
+
+
+def get_grist_column_definitions(tbl_name: str, conn: Connection) -> pd.DataFrame:
+    print("Fetching columns information from Grist document metadata.")
+    df_col = pd.read_sql(f"SELECT * FROM {tbl_name}", con=conn)
+    return df_col
+
+
+# ===================================
+# Processing - Table definitions
+# ===================================
+def drop_grist_internal_table(df: pd.DataFrame, column: str, grist_internal_tables: Iterable[str]) -> pd.DataFrame:
+    """
+    Drop rows where the specified table name contains any of the grist internal tables.
+    The aim is to keep only business tables.
+
+    Args:
+        df (pd.DataFrame): DataFrame of the table information.
+        column (str): The column which contains table names.
+        grist_internal_tables (Iterable[str]): Internal tables to drop.
+
+    Returns:
+        pd.DataFrame: The filtered DataFrame.
+    """
+    df_filtered = df.loc[df[column].str.contains(pat="|".join(grist_internal_tables), na=False)]
+    df = df.drop(index=df_filtered.index)
+    return df
+
+
+def process_tbl_info(
+    df: pd.DataFrame, grist_internal_tables: Iterable[str], tablename_column: str, lower_tbl_name: bool = False
+) -> pd.DataFrame:
+    cols_to_keep = ["id", tablename_column]
+    df = df.loc[:, cols_to_keep].copy()
+    df = drop_grist_internal_table(df=df, column=tablename_column, grist_internal_tables=grist_internal_tables)
+    if lower_tbl_name:
+        df[tablename_column] = df.loc[:, tablename_column].str.lower()
+    return df
+
+
+# ===================================
+# Processing - Column definitions
+# ===================================
+def drop_grist_internal_columns(df: pd.DataFrame, column: str, grist_internal_columns: Iterable[str]) -> pd.DataFrame:
+    """
+    Drop rows where the specified column contains any of the grist internal columns.
+    The aim is to keep only business tables.
+
+    Args:
+        df (pd.DataFrame): DataFrame of the column information.
+        column (str): The column which contains column names.
+        grist_internal_columns (Iterable[str]): Internal columns to drop.
+
+    Returns:
+        pd.DataFrame: The filtered DataFrame.
+    """
+    df_filtered = df.loc[df[column].str.contains(pat="|".join(grist_internal_columns), na=False)]
+    df = df.drop(index=df_filtered.index)
+    return df
+
+
+def convert_grist_data_type_to_dbml(df: pd.DataFrame, column: str) -> pd.DataFrame:
+    df["type_dbml"] = df.loc[:, column].map(TYPE_CONVERT)
+    return df
+
+
+def process_col_info(
+    df: pd.DataFrame,
+    grist_internal_columns: Iterable[str],
+    parent_id_column: str,
+    columnname_column: str,
+    columntype_column: str,
+    lower_col_name: bool = False,
+) -> pd.DataFrame:
+    cols_to_keep = ["id", parent_id_column, columnname_column, "type", "description"]
+    df = df.loc[:, cols_to_keep].copy()
+    df = drop_grist_internal_columns(df=df, column=columnname_column, grist_internal_columns=grist_internal_columns)
+    df = convert_grist_data_type_to_dbml(df=df, column=columntype_column)
+    if lower_col_name:
+        df[columnname_column] = df.loc[:, columnname_column].str.lower()
+    return df
+
+
+# ===================================
+# DBML & Export
+# ===================================
+def process_dbml(df_tbl: pd.DataFrame, df_col: pd.DataFrame, parent_id_column: str) -> pd.DataFrame:
+    df = pd.merge(left=df_tbl, right=df_col, left_on="id", right_on=parent_id_column)
+    df = df.drop(columns=["id_x", "id_y"])
+    df = df.sort_values(by=parent_id_column)
+    return df
+
+
+def generate_dbml_file(output_path: str, df: pd.DataFrame) -> None:
+    tbl_names = df.loc[:, "tableId"].unique()
+    dbml = {}
+    for tbl in tbl_names:
+        dbml[tbl] = []
+        dbml[tbl].append(f"Table {tbl}")
+        dbml[tbl].append("\n{\n\tid integer [primary key]")
+
+    for row in df.itertuples():
+        if row.type_grist in [GristType.REFERENCE.value, GristType.REFERENCELIST.value]:  # type: ignore
+            dbml[row.tableId].append(f"\n\tid_{row.colId} {row.type_dbml} [ref: > {row.type_grist_tbl_name}.id]")  # type: ignore
+        else:
+            dbml[row.tableId].append(f"\n\t{row.colId} {row.type_dbml}")  # type: ignore
+
+    with open(file=output_path, mode="w") as dbml_file:
+        for _key, values in dbml.items():
+            dbml_file.write("".join(values))
+            dbml_file.write("\n}\n\n")
+
+
+def export_to_csv(path: str, df: pd.DataFrame, sep: str = ";") -> None:
+    df.to_csv(path_or_buf=path, sep=sep)
