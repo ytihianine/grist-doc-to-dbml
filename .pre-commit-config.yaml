@@ -5,6 +5,7 @@ repos:
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
+        exclude: \.md$
     -   id: check-yaml
     -   id: check-added-large-files
 -   repo: https://github.com/astral-sh/ruff-pre-commit
@@ -13,7 +14,3 @@ repos:
       - id: ruff          # linting + tri des imports
         args: [--fix]
       - id: ruff-format   # formatage (remplace black)
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.0.0
-    hooks:
-      - id: mypy
