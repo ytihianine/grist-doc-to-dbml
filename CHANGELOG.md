@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.1](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.1.0...v0.1.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* **ci:** update precommit config file name ([cbf366d](https://github.com/ytihianine/grist-doc-to-db-parser/commit/cbf366de3c4d5808bf78335eedcaaaab4ec7ef0e))
+
+
+### Others
+
+* **ci:** add pre-commit-config ([a5f7640](https://github.com/ytihianine/grist-doc-to-db-parser/commit/a5f7640d69f3c64d36a69c29c2baacb623106190))
+* **ci:** add python linting workflow ([992357d](https://github.com/ytihianine/grist-doc-to-db-parser/commit/992357d335eda3a426266e09505a00f1e7358aec))
+* **ci:** rename precommit config file ([214697c](https://github.com/ytihianine/grist-doc-to-db-parser/commit/214697cfae77596aa9008bd80a6eb21eedd7939c))
+* **ci:** replace requirements with pyproject ([b365b65](https://github.com/ytihianine/grist-doc-to-db-parser/commit/b365b6547bbf64c249b5d5b0b6a5e2d6cc2c498d))
+* **precommit:** exclude md files from end-of-file-fixer hook ([252d763](https://github.com/ytihianine/grist-doc-to-db-parser/commit/252d76317005c24b2cdc53f1edeb43666250c092))
+* **precommit:** exclude md files from trailing-whitespace hook ([95c42ad](https://github.com/ytihianine/grist-doc-to-db-parser/commit/95c42adb90b6d08dfc534f5ea8ed8d4a9cd747ee))
+* update gitignore ([eb7e298](https://github.com/ytihianine/grist-doc-to-db-parser/commit/eb7e298536a7df2a5531f023beb96a2b0aedc8dc))
+
 ## 0.1.0 (2026-08-05)
 
 
