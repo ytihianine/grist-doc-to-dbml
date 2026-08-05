@@ -4,6 +4,7 @@ import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 
 import pandas as pd
 
@@ -186,7 +187,7 @@ def process_dbml(df_tbl: pd.DataFrame, df_col: pd.DataFrame, parent_id_column: s
     return df
 
 
-def generate_dbml_file(df: pd.DataFrame, output_path: str, parentid_column: str) -> None:
+def generate_dbml_file(df: pd.DataFrame, output_path: Path, parentid_column: str) -> None:
     tbl_names = df.loc[:, parentid_column].unique()
     dbml = {}
     for tbl in tbl_names:
@@ -206,7 +207,7 @@ def generate_dbml_file(df: pd.DataFrame, output_path: str, parentid_column: str)
             dbml_file.write("\n}\n\n")
 
 
-def export_to_csv(path: str, df: pd.DataFrame, sep: str = ";") -> None:
+def export_to_csv(df: pd.DataFrame, path: Path, sep: str = ";") -> None:
     df.to_csv(path_or_buf=path, sep=sep)
 
 
@@ -258,8 +259,8 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
     # (Optional) Export dataframe to csv format
     custom_logger.info(msg="Step 5/5 - Exporting data.")
     if config.export:
-        export_to_csv(path=config.csv_output_path, df=df_dbml)
+        export_to_csv(df=df_dbml, path=Path(config.csv_output_path))
 
     # Export to dbml format
-    generate_dbml_file(df=df_dbml, output_path=config.dbml_output_path, parentid_column=config.grist_column_with_tablename)
+    generate_dbml_file(df=df_dbml, output_path=Path(config.dbml_output_path), parentid_column=config.grist_column_with_tablename)
     custom_logger.info(msg="Step 5/5 - Finished.")
