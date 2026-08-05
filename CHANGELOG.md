@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.2.0...v0.3.0) (2026-08-05)
+
+
+### Features
+
+* **src:** simplify type conversion and add step logs ([609c077](https://github.com/ytihianine/grist-doc-to-db-parser/commit/609c077956c50a92d832ad7d3794c118dc2f58f3))
+
+
+### Bug Fixes
+
+* **src:** update Ref and Reflist type conversion ([6f75d09](https://github.com/ytihianine/grist-doc-to-db-parser/commit/6f75d0965eb4b35274d5b308d2efa4da4de9253a))
+
+
+### Others
+
+* **img:** update ERD image ([eef2760](https://github.com/ytihianine/grist-doc-to-db-parser/commit/eef276083c8c3611f25b8da0cdb3acb80841df37))
+
 ## [0.2.0](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.1.1...v0.2.0) (2026-08-05)
 
 
