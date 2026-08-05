@@ -329,3 +329,4 @@ dist
 *.db
 *.sql
 *.csv
+*.dbml
