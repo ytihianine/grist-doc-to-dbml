@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.2.0](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.1.1...v0.2.0) (2026-08-05)
+
+
+### Features
+
+* **main:** update main to use new functions ([8bbcb15](https://github.com/ytihianine/grist-doc-to-db-parser/commit/8bbcb158d88596dd7383a66118eaafb32d293ddc))
+* **src:** add logger to print information in console ([38a0dbd](https://github.com/ytihianine/grist-doc-to-db-parser/commit/38a0dbde908d62230c242b4d60f5083f7da44b8b))
+* **src:** convert str output path to Path object ([099d835](https://github.com/ytihianine/grist-doc-to-db-parser/commit/099d83507e1707ef4591157e1e0b82d2aadbaa8f))
+* **src:** refactor and simplify processing functions ([840a233](https://github.com/ytihianine/grist-doc-to-db-parser/commit/840a2338f28f3d405f08e5edefd8b15eaca7b331))
+
+
+### Bug Fixes
+
+* **src:** replace all hardcoded column name values by config attributs ([9dabb93](https://github.com/ytihianine/grist-doc-to-db-parser/commit/9dabb93369746e960544b3bb64e4fae579aa54d2))
+
+
+### Documentations
+
+* update project documentation and add images to illustrate the purpose of the script ([c67e938](https://github.com/ytihianine/grist-doc-to-db-parser/commit/c67e93806d8b640a36cc4963d8cf969e57823f00))
+
+
+### Others
+
+* add dbml files to gitignore ([d02fefe](https://github.com/ytihianine/grist-doc-to-db-parser/commit/d02fefe21243c66f69039757e5d206862abd79f3))
+* **src:** add step logs ([e8fd2d6](https://github.com/ytihianine/grist-doc-to-db-parser/commit/e8fd2d619b172da95aa937acee50fb938bcbd0be))
+
 ## [0.1.1](https://github.com/ytihianine/grist-doc-to-db-parser/compare/v0.1.0...v0.1.1) (2026-08-05)
 
 
