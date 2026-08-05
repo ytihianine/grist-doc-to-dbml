@@ -1,4 +1,4 @@
-# grist-doc-to-dbml-parser
+# grist-doc-to-dbml
 
 Parse a Grist document and generate DBML schema files.  
 Generating DBML schema files allow users to explore data structures and links using ERD (Entity Relationnal Diagram) tools !  
@@ -21,8 +21,8 @@ We get the following ERD with all tables, columns and data types associated whic
 Clone this repository using Git:
 
 ```bash
-git clone https://github.com/ytihianine/grist-doc-to-dbml-parser.git
-cd grist-doc-to-dbml-parser/
+git clone https://github.com/ytihianine/grist-doc-to-dbml.git
+cd grist-doc-to-dbml/
 ```
 
 Install the dependencies:
