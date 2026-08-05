@@ -186,8 +186,8 @@ def process_dbml(df_tbl: pd.DataFrame, df_col: pd.DataFrame, parent_id_column: s
     return df
 
 
-def generate_dbml_file(output_path: str, df: pd.DataFrame) -> None:
-    tbl_names = df.loc[:, "tableId"].unique()
+def generate_dbml_file(df: pd.DataFrame, output_path: str, parentid_column: str) -> None:
+    tbl_names = df.loc[:, parentid_column].unique()
     dbml = {}
     for tbl in tbl_names:
         dbml[tbl] = []
@@ -226,7 +226,10 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
     df_tbl = get_grist_table_definitions(tbl_name=config.grist_table_with_table_information, conn=db_conn)
     custom_logger.info(msg=f"Nb lignes avant processing: {len(df_tbl)}")
     df_tbl = process_tbl_info(
-        df=df_tbl, tablename_column="tableId", grist_internal_tables=config.grist_internal_tables, lower_tbl_name=True
+        df=df_tbl,
+        tablename_column=config.grist_column_with_tablename,
+        grist_internal_tables=config.grist_internal_tables,
+        lower_tbl_name=True,
     )
     custom_logger.info(msg=f"Nb lignes après processing: {len(df_tbl)}")
     custom_logger.info(msg="Step 2/5 - Finished.")
@@ -238,9 +241,9 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
     df_cols = process_col_info(
         df=df_cols,
         grist_internal_columns=config.grist_internal_columns,
-        parent_id_column="parentId",
-        columnname_column="colId",
-        columntype_column="type",
+        parent_id_column=config.grist_column_with_parentid,
+        columnname_column=config.grist_column_with_columnname,
+        columntype_column=config.grist_column_with_column_type,
         lower_col_name=True,
     )
     custom_logger.info(msg=f"Nb lignes après processing: {len(df_cols)}")
@@ -248,7 +251,7 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
 
     # Prepare last df before formating
     custom_logger.info(msg="Step 4/5 - Generating DBML formated string from the processed dataframes.")
-    df_dbml = process_dbml(df_tbl=df_tbl, df_col=df_cols, parent_id_column="parentId")
+    df_dbml = process_dbml(df_tbl=df_tbl, df_col=df_cols, parent_id_column=config.grist_column_with_parentid)
     custom_logger.info(msg=df_dbml.head())
     custom_logger.info(msg="Step 4/5 - Finished.")
 
@@ -258,5 +261,5 @@ def convert_grist_schema_to_dbml(config: Config) -> None:
         export_to_csv(path=config.csv_output_path, df=df_dbml)
 
     # Export to dbml format
-    generate_dbml_file(output_path=config.dbml_output_path, df=df_dbml)
+    generate_dbml_file(df=df_dbml, output_path=config.dbml_output_path, parentid_column=config.grist_column_with_tablename)
     custom_logger.info(msg="Step 5/5 - Finished.")
