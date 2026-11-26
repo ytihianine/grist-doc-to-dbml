@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.2](https://github.com/ytihianine/grist-doc-to-dbml/compare/v0.3.1...v0.3.2) (2026-11-26)
+
+
+### Others
+
+* **deps:** update dependency numpy to v2.5.3 ([#23](https://github.com/ytihianine/grist-doc-to-dbml/issues/23)) ([c76aaea](https://github.com/ytihianine/grist-doc-to-dbml/commit/c76aaeaf2abdae54d4be22c93b460237dbc8424f))
+* **deps:** update dependency numpy to v2.5.5 ([#26](https://github.com/ytihianine/grist-doc-to-dbml/issues/26)) ([42f77fc](https://github.com/ytihianine/grist-doc-to-dbml/commit/42f77fc6a40dbd3c7a9fea9ffcad6bc7166f9e09))
+* **deps:** update dependency pandas to v3.0.6 ([#25](https://github.com/ytihianine/grist-doc-to-dbml/issues/25)) ([170f405](https://github.com/ytihianine/grist-doc-to-dbml/commit/170f405958845b90dc051a02cfc51adbb0254bd0))
+* **deps:** update dependency pandas to v3.1.1 ([#29](https://github.com/ytihianine/grist-doc-to-dbml/issues/29)) ([7b4a00f](https://github.com/ytihianine/grist-doc-to-dbml/commit/7b4a00f907fc1abfa2f890f1fc28a68b252a7aad))
+* **deps:** update dependency pre-commit to v4.7.0 ([#28](https://github.com/ytihianine/grist-doc-to-dbml/issues/28)) ([d9931d8](https://github.com/ytihianine/grist-doc-to-dbml/commit/d9931d8b2bc27cd529fe6858ccd6f249cf48c893))
+* **deps:** update dependency python to 3.15 ([#27](https://github.com/ytihianine/grist-doc-to-dbml/issues/27)) ([e7a6ce4](https://github.com/ytihianine/grist-doc-to-dbml/commit/e7a6ce446a190f7fc636b51038e1ace49f7d3127))
+
 ## [0.3.1](https://github.com/ytihianine/grist-doc-to-dbml/compare/v0.3.0...v0.3.1) (2026-08-19)
 
 
